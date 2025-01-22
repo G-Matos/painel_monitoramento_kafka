@@ -1,2 +1,2 @@
-# painel_monitoramento_kafka
-Painel para monitoramento de conectores Kafka 
+# painel_monitor_kafka
+Painel para observabilidade de conectores Kafka

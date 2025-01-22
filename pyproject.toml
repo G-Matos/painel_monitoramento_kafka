@@ -1,0 +1,11 @@
+[project]
+name = "user-login-panel"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "psycopg2>=2.9.10",
+    "sqlalchemy>=2.0.36",
+    "streamlit>=1.39.0",
+]
