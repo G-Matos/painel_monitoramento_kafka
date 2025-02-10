@@ -1,5 +1,5 @@
 import streamlit as st
-from request import get_status_sink, get_status_source, log_message_source
+from request import get_status_sink, get_status_source
 import pandas as pd
 from streamlit_autorefresh import st_autorefresh # type: ignore
 #from user_login_panel.controllers.user_controller import UserController
@@ -10,25 +10,32 @@ st.set_page_config(layout="wide")
 st.header("Monitoramento Conectores Kafka",divider="gray")
 
 def main():
-    user_controller = UserController()
-    user_view = user_controller.handle_main_page()
-    if user_controller.get_logged_in():
-        start_date_str = user_view.get_start_date().strftime('%Y-%m-%d')
-        end_date_str = user_view.get_end_date().strftime('%Y-%m-%d')
-        # Obtém as permissões e exceções do user_controller
-        permission_filter = [user_controller.get_permition()] if user_controller.get_permition() else []
-        exception_filter = [user_controller.get_exception()] if user_controller.get_exception() else []
+    #user_controller = UserController()
+    #user_view = user_controller.handle_main_page()
+    #if user_controller.get_logged_in():
+    #    start_date_str = user_view.get_start_date().strftime('%Y-%m-%d')
+    #    end_date_str = user_view.get_end_date().strftime('%Y-%m-%d')
+    #    # Obtém as permissões e exceções do user_controller
+    #    permission_filter = [user_controller.get_permition()] if user_controller.get_permition() else []
+    #    exception_filter = [user_controller.get_exception()] if user_controller.get_exception() else []
     
         #sink data
         sink_tab = get_status_sink()
-        sink_df = pd.DataFrame(sink_tab).sort_values(by='Status Atual', key=lambda x: x != 'PAUSED')
+        if not sink_tab:
+            sink_df = pd.DataFrame()
+        else:
+            sink_df = pd.DataFrame(sink_tab).sort_values(by='Status Atual', key=lambda x: x.strip() != 'PAUSED')
+        
         #source data
         source_tab = get_status_source()
-        source_df = pd.DataFrame(source_tab).sort_values(by='Status Atual', key=lambda x: x != 'PAUSED')
+        if source_tab.empty:
+            source_df = pd.DataFrame()
+        else:
+            source_df = pd.DataFrame(source_tab).sort_values(by='Status Atual', key=lambda x: x != 'PAUSED')
 
         combined_df = pd.concat([sink_df, source_df])
-        paused_df = combined_df[combined_df['Status Atual'] == "PAUSED"]
-        failed_df = combined_df[combined_df["Status Atual"] == 'FAILED']
+        paused_df = combined_df[combined_df["Status Atual"] == "PAUSED"]
+        failed_df = combined_df[combined_df["Status Atual"] == "FAILED"]
 
         st.subheader("Visualização Geral")
         with st.container(border=True):
@@ -45,6 +52,7 @@ def main():
 
         Warning1 = combined_df.loc[combined_df['Status Atual'] == "PAUSED"]
         Warning2 = combined_df.loc[combined_df['Status Atual'] == "FAILED"]
+        
         if not Warning1.empty:
             st.warning('Conectores com status "PAUSED" identificados', icon="⚠️")
         if not Warning2.empty:

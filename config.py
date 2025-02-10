@@ -7,10 +7,13 @@ source_port = {
 }
 
 # Kafka IP e Porta 
-ip_porta = "144.22.196.245:15005"
+ip_porta = "144.22.196.245:15001" # 144.22.196.245:15005
 
 # Kafka IP
 source_ip = "144.22.196.245"
 
 #db file path 
 db_path = "dbPython.db"
+
+#log file path
+log_path = "logs/"

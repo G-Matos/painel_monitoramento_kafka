@@ -1,0 +1,4 @@
+2025-01-28 16:04 - [INFO] - ['2025-sink-jcontrol' 'PAUSED' 'PAUSED' '15005' 'N/A']
+2025-01-28 16:04 - [INFO] - ['2025-source-jcontrol' 'PAUSED' 'PAUSED' '26005' 'N/A']
+2025-01-28 16:04 - [INFO] - ['2025-sink-jcontrol' 'PAUSED' 'PAUSED' '15005' 'N/A']
+2025-01-28 16:04 - [INFO] - ['2025-source-jcontrol' 'PAUSED' 'PAUSED' '26005' 'N/A']
