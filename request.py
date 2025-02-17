@@ -2,8 +2,6 @@ import pandas as pd
 import json, sqlite3, requests, re
 from config import ip_porta , source_ip, db_path
 
-log_message_source = []
-
 def req_connector(url, connector_name = ""):
     try:
         r = requests.get(url)
@@ -11,14 +9,15 @@ def req_connector(url, connector_name = ""):
             return json.loads(r.content)
     except Exception as exc:
         error_msg = {
-            "name": connector_name,
-            "connector": {"state": "N/A", "worker_id": "N/A"},
-            "tasks": [{"id": 0, "state": "N/A", "worker_id": "N/A"}],
-            "type": "sink",
-            "error_msg": str(exc)
-        }
+                'name': 'N/A',
+                'connector': {'state':'N/A','worker_id': 'N/A'},
+                'tasks': [{'id': 0, 'state': 'N/A', 'worker_id': 'N/A'}],
+                'type': 'sink',
+                'error_msg': str(exc)
+            }
+
         return error_msg
-    
+
 def get_connector_name():
     connector_name = []
     name_command = req_connector(f"http://{ip_porta}/connectors")
@@ -30,33 +29,35 @@ def get_connector_name():
 def get_status_sink():
     sink_info = []
     for connector in get_connector_name():
-        get_sink = req_connector(f"http://{ip_porta}/connectors/{connector}/status", connector_name = "0000-sink-jcontrol")
+        get_sink = req_connector(f"http://{ip_porta}/connectors/{connector}/status", connector)
         if get_sink:
             conector = get_sink['name']
             status_anterior = get_sink['connector']['state']
             status_atual = get_sink['tasks'][0]['state']
             porta_kafka = get_sink['connector']['worker_id'].split(":")[-1] 
             trace = get_sink.get("tasks", [{}])[0].get("trace", "N/A")
-            error_msg = get_sink["error_msg"]
+            error_msg = get_sink.get("error_msg", "")
 
             if trace != "N/A":
-                match = re.search(r'org\.apache\.kafka\.connect\.errors\.(.*?)(,|\n)', trace)
+                match = re.search(r'Caused by: (.*?)(.{1,200})', trace)
                 trace_message = match.group(1).strip() if match else "N/A"
             elif error_msg:
                 mensagem = error_msg
             else:
                 trace_message = "N/A"
                 mensagem = trace_message
-                
-                sink_info.append({
-                    "Conector": conector, 
-                    "Status Anterior": status_anterior, 
-                    "Status Atual": status_atual,
-                    "Porta": porta_kafka,
-                    "Mensagem": mensagem
-                })
-                sink_df = pd.DataFrame(sink_info)
-                return sink_df
+
+            sink_info.append({
+                "Conector": conector, 
+                "Status Anterior": status_anterior, 
+                "Status Atual": status_atual,
+                "Porta": porta_kafka,
+                "Mensagem": mensagem
+            })
+        
+            sink_df = pd.DataFrame(sink_info)
+
+    return sink_df
 
 def get_status_source():
     dbcon = sqlite3.connect(db_path)
@@ -66,7 +67,7 @@ def get_status_source():
 
     source_info = []
     for LicencaTB, PortaTB in resultTB:
-        get_source = req_connector(f'http://{source_ip}:{PortaTB}/connectors/{LicencaTB}-source-jcontrol/status', connector_name = f"{LicencaTB}-source-jcontrol/status")
+        get_source = req_connector(f'http://{source_ip}:{PortaTB}/connectors/{LicencaTB}-source-jcontrol/status', connector_name = f"{LicencaTB}-source-jcontrol")
         if get_source:
             conector = get_source['name']
             status_anterior = get_source['connector']['state']
@@ -76,7 +77,7 @@ def get_status_source():
             
             trace = get_source.get("tasks", [{}])[0].get("trace", "N/A")
             if trace != "N/A":
-                match = re.search(r'org\.apache\.kafka\.connect\.errors\.(.*?)(,|\n)', trace)
+                match = re.search(r'Caused by: (.*?)(.{1,200})', trace)
                 trace_message = match.group(1).strip() if match else "N/A"
             elif error_msg:
                 mensagem = error_msg
@@ -91,12 +92,10 @@ def get_status_source():
                 "Porta": porta_kafka,
                 "Mensagem":mensagem
             })
-    
+
             source_df = pd.DataFrame(source_info)
 
     return source_df
 
-if __name__ == "__main__":
-    print(get_status_sink())
 
 

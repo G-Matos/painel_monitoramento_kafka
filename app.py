@@ -21,23 +21,24 @@ def main():
     
         #sink data
         sink_tab = get_status_sink()
-        if not sink_tab:
-            sink_df = pd.DataFrame()
+        if sink_tab.empty:
+            st.warning("[Sink] Falha ao realizar requisição!",  icon="⚠️")
         else:
-            sink_df = pd.DataFrame(sink_tab).sort_values(by='Status Atual', key=lambda x: x.strip() != 'PAUSED')
-        
+            sink_df = pd.DataFrame(sink_tab).sort_values(by='Status Atual', key=lambda x: x != 'PAUSED').drop_duplicates(subset=['Conector'])
+
         #source data
         source_tab = get_status_source()
         if source_tab.empty:
-            source_df = pd.DataFrame()
+            st.warning("[Source] Falha ao realizar requisição!",  icon="⚠️")
         else:
-            source_df = pd.DataFrame(source_tab).sort_values(by='Status Atual', key=lambda x: x != 'PAUSED')
-
+            source_df = pd.DataFrame(source_tab).sort_values(by='Status Atual', key=lambda x: x != 'PAUSED').drop_duplicates(subset=['Conector'])
+            
         combined_df = pd.concat([sink_df, source_df])
         paused_df = combined_df[combined_df["Status Atual"] == "PAUSED"]
         failed_df = combined_df[combined_df["Status Atual"] == "FAILED"]
 
         st.subheader("Visualização Geral")
+        
         with st.container(border=True):
             info1, info2, info3, info4 = st.columns(4)
             with info1:
