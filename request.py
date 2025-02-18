@@ -15,7 +15,6 @@ def req_connector(url, connector_name = ""):
                 'type': 'sink',
                 'error_msg': str(exc)
             }
-
         return error_msg
 
 def get_connector_name():
