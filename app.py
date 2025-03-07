@@ -57,7 +57,7 @@ def main():
         if not Warning1.empty:
             st.warning('Conectores com status "PAUSED" identificados', icon="⚠️")
         if not Warning2.empty:
-            st.warning('Conectores com status "FAILED" identificados', icon="⚠️")
+            st.error('Conectores com status "FAILED" identificados', icon="🚨")
 
         tab_status, tab_paused, tab_failed = st.tabs(["Status Conectores", "Conectores Pausados", "Conectores com Falha"])
 
