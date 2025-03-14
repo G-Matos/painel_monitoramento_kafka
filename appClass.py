@@ -1,13 +1,13 @@
-from requestsClass import * 
+from modules.requestsClass import Requests
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh # type: ignore
 #from user_login_panel.controllers.user_controller import UserController
 
 connector_data = Requests.connector_info()
 
-#st.logo("static/new-linkedby.png")
+st.logo("static/new-linkedby.png")
 st.set_page_config(layout="wide")
-st.header(":red[Monitoramento Conectores Kafka]",divider="red")
+st.header("Monitoramento Conectores Kafka",divider="red")
 
 def main():
     #controle de login 
@@ -21,7 +21,8 @@ def main():
     #    exception_filter = [user_controller.get_exception()] if user_controller.get_exception() else []
     
     connector_info = Requests.connector_info()
-    sink_df = connector_info[connector_info["Type"] == "sink"]
+    sink_df = connector_info[(connector_info["Type"] == "sink") & 
+                         (~connector_info["Conector"].str.contains("envio", na=False))]
     source_df = connector_info[connector_info["Type"] == "source"]
     paused_df = connector_info[connector_info["Status Atual"] == "PAUSED"]
     failed_df = connector_info[connector_info["Status Atual"] == "FAILED"]
@@ -63,26 +64,27 @@ def main():
             st.subheader("Conectores Source", divider="red")
             st.dataframe(source_df, hide_index=True, use_container_width=True)
 
-        st.subheader(" Conectores Sink Octopus", divider="red")
+        st.subheader(" Conectores Sink Octopus", divider="blue")
         with st.container(border=False):
             st.dataframe(octopus_df, hide_index=True, use_container_width=True)
 
     # Aba de alerta dos conectores
     with error_conn: 
 
-        with st.container(border=False):
-            st.subheader("Alerta de Conectores com Falha")
+        st.subheader("Alerta de Conectores com Falha")
+        with st.container(border=True):
             if not failed_df.empty:
                 st.dataframe(failed_df, hide_index=True, use_container_width=True)
             else:
                 st.write('Nenhum conector com status :red[FAILED] encontrado !')
-        
-        with st.container(border=False):
-            st.subheader("Alerta de Conectores em Pausa")
+
+        st.subheader("Alerta de Conectores em Pausa")
+        with st.container(border=True):
             if not paused_df.empty:
                 st.dataframe(paused_df, hide_index=True, use_container_width=True)
             else:
                 st.write('Nenhum conector com status :red[Paused] encontrado !')
-
+                
+        st_autorefresh(interval=300000, key="refresh")
 if __name__ == "__main__":
     main()
