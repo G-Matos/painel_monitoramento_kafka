@@ -33,7 +33,7 @@ class SetConnector():
         return resultado
 
 # requisições http
-class Requests():
+class HttpRequests():
 
     # set url 
     @staticmethod
@@ -80,8 +80,8 @@ class Requests():
 
         for port in ports:
             for connector in connectors[port]:
-                url = Requests.set_url(port, connector)
-                response = Requests.http_req(url)
+                url = HttpRequests.set_url(port, connector)
+                response = HttpRequests.http_req(url)
                 if response:
                     conector = response['name']
                     status_anterior = response['connector']['state']

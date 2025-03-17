@@ -1,9 +1,7 @@
-from modules.requestsClass import Requests
+from modules.requestsClass import HttpRequests
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh # type: ignore
 #from user_login_panel.controllers.user_controller import UserController
-
-connector_data = Requests.connector_info()
 
 st.logo("static/new-linkedby.png")
 st.set_page_config(layout="wide")
@@ -20,7 +18,7 @@ def main():
     #    permission_filter = [user_controller.get_permition()] if user_controller.get_permition() else []
     #    exception_filter = [user_controller.get_exception()] if user_controller.get_exception() else []
     
-    connector_info = Requests.connector_info()
+    connector_info = HttpRequests.connector_info()
     sink_df = connector_info[(connector_info["Type"] == "sink") & 
                          (~connector_info["Conector"].str.contains("envio", na=False))]
     source_df = connector_info[connector_info["Type"] == "source"]
@@ -86,5 +84,6 @@ def main():
                 st.write('Nenhum conector com status :red[Paused] encontrado !')
                 
         st_autorefresh(interval=300000, key="refresh")
+        
 if __name__ == "__main__":
     main()

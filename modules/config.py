@@ -1,6 +1,6 @@
 # configurações a serem mantidas 
 #log file path
-log_path = "logs/"
+log_path = "sysfiles/logs/"
 
 # variaveis novas
 kafka_ip = '144.22.196.245'
