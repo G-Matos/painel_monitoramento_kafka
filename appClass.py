@@ -1,7 +1,8 @@
 from modules.requestsClass import HttpRequests
 import streamlit as st
 from streamlit_autorefresh import st_autorefresh # type: ignore
-#from user_login_panel.controllers.user_controller import UserController
+from user_login_panel.controllers.user_controller import UserController
+from modules.dataLog import *
 
 st.logo("static/new-linkedby.png")
 st.set_page_config(layout="wide")
@@ -44,46 +45,72 @@ def main():
     # Alertas de conectores 
     Warning1 = connector_info.loc[connector_info['Status Atual'] == "PAUSED"]
     Warning2 = connector_info.loc[connector_info['Status Atual'] == "FAILED"]
-
-    if not Warning1.empty:
-        st.warning('Conectores com status "PAUSED" identificados', icon="⚠️")
-    if not Warning2.empty:
-        st.error('Conectores com status "FAILED" identificados', icon="🚨")
-
+    print(Warning1.items())
     # aba de status dos conectores
     status_conn, error_conn = st.tabs(["Status Conectores", "Alerta de Conectores"])
 
     with status_conn:
+        if not Warning1.empty:
+            log_writer = LogWrite() 
+            log_writer.log_write(Warning1.values, "paused")
+            st.warning('Conectores com status "PAUSED" identificados', icon="⚠️")
+        if not Warning2.empty:
+            log_writer = LogWrite() 
+            log_writer.log_write(Warning2.values, "failed")
+            st.error('Conectores com status "FAILED" identificados', icon="🚨")
+
         sink_column, source_column = st.columns(2)
         with sink_column:
-            st.subheader("Conectores Sink", divider="red")
+            st.subheader("Conectores Sink")
             st.dataframe(sink_df, hide_index=True, use_container_width=True)
         with source_column:
-            st.subheader("Conectores Source", divider="red")
+            st.subheader("Conectores Source")
             st.dataframe(source_df, hide_index=True, use_container_width=True)
-
-        st.subheader(" Conectores Sink Octopus", divider="blue")
+        st.divider()
+        st.subheader(" Conectores Sink Octopus")
         with st.container(border=False):
             st.dataframe(octopus_df, hide_index=True, use_container_width=True)
 
     # Aba de alerta dos conectores
     with error_conn: 
-
-        st.subheader("Alerta de Conectores com Falha")
-        with st.container(border=True):
-            if not failed_df.empty:
-                st.dataframe(failed_df, hide_index=True, use_container_width=True)
-            else:
-                st.write('Nenhum conector com status :red[FAILED] encontrado !')
-
+        
         st.subheader("Alerta de Conectores em Pausa")
-        with st.container(border=True):
+        with st.container(border=False):
             if not paused_df.empty:
                 st.dataframe(paused_df, hide_index=True, use_container_width=True)
             else:
-                st.write('Nenhum conector com status :red[Paused] encontrado !')
-                
-        st_autorefresh(interval=300000, key="refresh")
+                st.info('Nenhum conector com status :red[Paused] encontrado.', icon="ℹ️")
+        st.divider()
+        st.subheader("Alerta de Conectores com Falha")
+        with st.container(border=False):
+            if not failed_df.empty:
+                st.dataframe(failed_df, hide_index=True, use_container_width=True)
+            else:
+                st.info('Nenhum conector com status :red[FAILED] encontrado.', icon="ℹ️")
         
+        st_autorefresh(interval=300000, key="refresh")
+    
+    footer = """
+            <style>
+                .footer {
+                    position: static;
+                    bottom: 0;
+                    left: 0;  /* Garante que o rodapé esteja alinhado à esquerda */
+                    width: 100%;
+                    background-color: rgb(14, 17, 23);
+                    text-align: center;  /* Centraliza o texto dentro do rodapé */
+                    padding: 10px;
+                    font-size: 14px;
+                    color: white;  /* Adicionando uma cor de texto para facilitar a leitura */
+                }
+            </style>
+
+            <div class="footer">
+                <p>2025 Painel Monitoramento Kafka | v 1.1.2 by Gabriel Matos ®</p>
+            </div>
+        """
+    st.divider()
+    st.markdown(footer, unsafe_allow_html=True)
+
 if __name__ == "__main__":
     main()
